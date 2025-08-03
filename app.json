@@ -2,7 +2,7 @@
   "expo": {
     "name": "Build X",
     "slug": "build-x",
-    "version": "1.0.0",
+    "version": "0.0.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -50,7 +50,14 @@
         {
           "iCloudContainerEnvironment": "Production"
         }
-      ]
+      ],
+      [
+        "expo-av",
+        {
+          "microphonePermission": "يحتاج التطبيق للوصول إلى الميكروفون لتسجيل الصوت."
+        }
+      ],
+      "expo-system-ui"
     ],
     "extra": {
       "eas": {

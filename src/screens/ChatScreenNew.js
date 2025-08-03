@@ -13,11 +13,15 @@ import {
   Image,
   KeyboardAvoidingView,
   Platform,
-  ActivityIndicator
+  ActivityIndicator,
+  Pressable,
+  Animated
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import * as DocumentPicker from 'expo-document-picker';
+import * as Speech from 'expo-speech';
+import { Audio } from 'expo-av';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import AttachmentMenu from '../components/AttachmentMenu';
 import AdBanner from '../components/AdBanner';
@@ -32,7 +36,15 @@ const ChatScreen = ({ navigation, route }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [hasAPIKey, setHasAPIKey] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordingStatus, setRecordingStatus] = useState('idle');
+  const [recording, setRecording] = useState(null);
+  const [recordingDuration, setRecordingDuration] = useState(0);
+  const [recordingPermission, setRecordingPermission] = useState(false);
+  const [transcribedText, setTranscribedText] = useState('');
+  const [showScrollButton, setShowScrollButton] = useState(false);
   const scrollViewRef = useRef();
+  const recordingAnimation = useRef(new Animated.Value(1)).current;
   
   const { userType = 'guest', email = '', name = 'ضيف', userPoints = 293 } = route.params || {};
   const chatId = route?.params?.chatId || 'default';
@@ -40,11 +52,170 @@ const ChatScreen = ({ navigation, route }) => {
   useEffect(() => {
     initializeChat();
     checkAPIKey();
+    requestRecordingPermission();
   }, []);
 
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+  
+  // طلب إذن التسجيل الصوتي
+  const requestRecordingPermission = async () => {
+    try {
+      const { status } = await Audio.requestPermissionsAsync();
+      setRecordingPermission(status === 'granted');
+      
+      if (status !== 'granted') {
+        Alert.alert('تنبيه', 'نحتاج إلى إذن الوصول للميكروفون لتفعيل ميزة تحويل الصوت إلى نص');
+      }
+    } catch (error) {
+      console.error('خطأ في طلب إذن التسجيل:', error);
+    }
+  };
+  
+  // بدء التسجيل الصوتي
+  const startRecording = async () => {
+    try {
+      if (!recordingPermission) {
+        await requestRecordingPermission();
+        if (!recordingPermission) return;
+      }
+      
+      // إعداد جلسة التسجيل
+      await Audio.setAudioModeAsync({
+        allowsRecordingIOS: true,
+        playsInSilentModeIOS: true,
+      });
+      
+      // إنشاء تسجيل جديد
+      const { recording: newRecording } = await Audio.Recording.createAsync(
+        Audio.RecordingOptionsPresets.HIGH_QUALITY
+      );
+      
+      setRecording(newRecording);
+      setRecordingStatus('recording');
+      setIsRecording(true);
+      
+      // بدء تحريك الرسوم المتحركة
+      startRecordingAnimation();
+      
+      // بدء عداد المدة
+      const interval = setInterval(() => {
+        setRecordingDuration(prev => prev + 1);
+      }, 1000);
+      
+      // تخزين المؤقت في الكائن للتمكن من إيقافه لاحقاً
+      newRecording._interval = interval;
+      
+    } catch (error) {
+      console.error('خطأ في بدء التسجيل:', error);
+      Alert.alert('خطأ', 'حدث خطأ أثناء بدء التسجيل');
+      setIsRecording(false);
+    }
+  };
+  
+  // إيقاف التسجيل الصوتي
+  const stopRecording = async () => {
+    try {
+      if (!recording) return;
+      
+      // إيقاف عداد المدة
+      if (recording._interval) {
+        clearInterval(recording._interval);
+      }
+      
+      // إيقاف التسجيل
+      await recording.stopAndUnloadAsync();
+      
+      // إعادة وضع الصوت
+      await Audio.setAudioModeAsync({
+        allowsRecordingIOS: false,
+      });
+      
+      // الحصول على URI للتسجيل
+      const uri = recording.getURI();
+      
+      // إيقاف الرسوم المتحركة
+      stopRecordingAnimation();
+      
+      // إعادة تعيين الحالة
+      setRecordingStatus('stopped');
+      setIsRecording(false);
+      
+      // محاكاة تحويل الصوت إلى نص (في التطبيق الحقيقي، سنستخدم خدمة تحويل الصوت إلى نص)
+      simulateTranscription();
+      
+      setRecording(null);
+      setRecordingDuration(0);
+      
+    } catch (error) {
+      console.error('خطأ في إيقاف التسجيل:', error);
+      Alert.alert('خطأ', 'حدث خطأ أثناء إيقاف التسجيل');
+      setIsRecording(false);
+      setRecordingDuration(0);
+    }
+  };
+  
+  // محاكاة تحويل الصوت إلى نص
+  const simulateTranscription = () => {
+    setIsLoading(true);
+    
+    // في التطبيق الحقيقي، سنرسل التسجيل إلى خدمة تحويل الصوت إلى نص
+    // هنا نقوم بمحاكاة ذلك بتأخير بسيط
+    setTimeout(() => {
+      const exampleTexts = [
+        'مرحباً، كيف يمكنني مساعدتك اليوم؟',
+        'أريد معلومات عن الذكاء الاصطناعي',
+        'هل يمكنك مساعدتي في كتابة مقال؟',
+        'أبحث عن معلومات حول برمجة تطبيقات الهاتف المحمول',
+        'كيف يمكنني تعلم لغة البرمجة بايثون؟'
+      ];
+      
+      const randomText = exampleTexts[Math.floor(Math.random() * exampleTexts.length)];
+      setInputText(randomText);
+      setTranscribedText(randomText);
+      setIsLoading(false);
+    }, 1500);
+  };
+  
+  // تحريك زر التسجيل
+  const startRecordingAnimation = () => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(recordingAnimation, {
+          toValue: 1.2,
+          duration: 500,
+          useNativeDriver: true,
+        }),
+        Animated.timing(recordingAnimation, {
+          toValue: 1,
+          duration: 500,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+  };
+  
+  // إيقاف تحريك زر التسجيل
+  const stopRecordingAnimation = () => {
+    recordingAnimation.stopAnimation();
+    Animated.timing(recordingAnimation, {
+      toValue: 1,
+      duration: 200,
+      useNativeDriver: true,
+    }).start();
+  };
+  
+  // التمرير لأعلى الشاشة
+  const scrollToTop = () => {
+    scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+  };
+  
+  // التعامل مع حدث التمرير
+  const handleScroll = (event) => {
+    const offsetY = event.nativeEvent.contentOffset.y;
+    setShowScrollButton(offsetY > height * 0.5);
+  };
 
   const initializeChat = async () => {
     try {
@@ -320,6 +491,8 @@ const ChatScreen = ({ navigation, route }) => {
           style={styles.messagesContainer}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.messagesContent}
+          onScroll={handleScroll}
+          scrollEventThrottle={16}
         >
           {messages.map((item, index) => renderMessage(item, index))}
           
@@ -330,6 +503,16 @@ const ChatScreen = ({ navigation, route }) => {
             </View>
           )}
         </ScrollView>
+        
+        {/* Scroll to Top Button */}
+        {showScrollButton && (
+          <TouchableOpacity 
+            style={styles.scrollTopButton}
+            onPress={scrollToTop}
+          >
+            <Ionicons name="arrow-up" size={20} color="#fff" />
+          </TouchableOpacity>
+        )}
 
         {/* Selected Image Preview */}
         {selectedImage && (
@@ -349,35 +532,66 @@ const ChatScreen = ({ navigation, route }) => {
 
         {/* Input Area */}
         <View style={styles.inputContainer}>
-          <TouchableOpacity
-            style={styles.attachButton}
-            onPress={() => setShowAttachmentMenu(true)}
-          >
-            <Ionicons name="add" size={24} color="#007AFF" />
-          </TouchableOpacity>
-          
-          <TextInput
-            style={styles.textInput}
-            value={inputText}
-            onChangeText={setInputText}
-            placeholder="كيف يمكنني مساعدتك؟"
-            placeholderTextColor="#999"
-            multiline
-            maxLength={1000}
-            textAlign="right"
-          />
-          
-          <TouchableOpacity
-            style={[styles.sendButton, (!inputText.trim() && !selectedImage) && styles.sendButtonDisabled]}
-            onPress={sendMessage}
-            disabled={(!inputText.trim() && !selectedImage) || isLoading}
-          >
-            <Ionicons 
-              name="send" 
-              size={20} 
-              color={(!inputText.trim() && !selectedImage) ? "#ccc" : "#fff"} 
-            />
-          </TouchableOpacity>
+          {!isRecording ? (
+            <>
+              <TouchableOpacity
+                style={styles.attachButton}
+                onPress={() => setShowAttachmentMenu(true)}
+              >
+                <Ionicons name="add" size={24} color="#007AFF" />
+              </TouchableOpacity>
+              
+              <TextInput
+                style={styles.textInput}
+                value={inputText}
+                onChangeText={setInputText}
+                placeholder="كيف يمكنني مساعدتك؟"
+                placeholderTextColor="#999"
+                multiline
+                maxLength={1000}
+                textAlign="right"
+              />
+              
+              {inputText.trim() || selectedImage ? (
+                <TouchableOpacity
+                  style={styles.sendButton}
+                  onPress={sendMessage}
+                  disabled={isLoading}
+                >
+                  <Ionicons name="send" size={20} color="#fff" />
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity
+                  style={styles.micButton}
+                  onPress={startRecording}
+                  disabled={!recordingPermission}
+                >
+                  <Ionicons name="mic" size={20} color="#fff" />
+                </TouchableOpacity>
+              )}
+            </>
+          ) : (
+            <View style={styles.recordingContainer}>
+              <View style={styles.recordingInfo}>
+                <Animated.View 
+                  style={[
+                    styles.recordingIndicator,
+                    { transform: [{ scale: recordingAnimation }] }
+                  ]}
+                />
+                <Text style={styles.recordingText}>
+                  جاري التسجيل... {recordingDuration}s
+                </Text>
+              </View>
+              
+              <TouchableOpacity
+                style={styles.stopRecordingButton}
+                onPress={stopRecording}
+              >
+                <Ionicons name="stop" size={20} color="#fff" />
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
 
         {/* Attachment Menu */}
@@ -397,6 +611,30 @@ const ChatScreen = ({ navigation, route }) => {
                   break;
                 case 'video':
                   Alert.alert('قريباً', 'ميزة الفيديو ستكون متاحة قريباً');
+                  break;
+                case 'voice':
+                  startRecording();
+                  break;
+                case 'enhance':
+                  if (inputText.trim()) {
+                    const enhancedText = `تحسين: ${inputText.trim()}`;
+                    setInputText(enhancedText);
+                  } else {
+                    Alert.alert('تنبيه', 'يرجى كتابة نص أولاً ليتم تحسينه');
+                  }
+                  break;
+                case 'translate':
+                  if (inputText.trim()) {
+                    const translationText = `ترجمة: ${inputText.trim()}`;
+                    setInputText(translationText);
+                  } else {
+                    Alert.alert('تنبيه', 'يرجى كتابة نص أولاً ليتم ترجمته');
+                  }
+                  break;
+                case 'slides':
+                case 'agent':
+                case 'chat':
+                  Alert.alert('قريباً', `ميزة ${type} ستكون متاحة قريباً`);
                   break;
                 default:
                   Alert.alert('قريباً', 'هذه الميزة ستكون متاحة قريباً');
@@ -603,6 +841,67 @@ const styles = StyleSheet.create({
   },
   sendButtonDisabled: {
     backgroundColor: '#e0e0e0',
+  },
+  micButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#FF5722',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 8,
+  },
+  recordingContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f8f8f8',
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  recordingInfo: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  recordingIndicator: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: '#FF0000',
+    marginRight: 8,
+  },
+  recordingText: {
+    fontSize: 14,
+    color: '#333',
+  },
+  stopRecordingButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#FF5722',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  scrollTopButton: {
+    position: 'absolute',
+    right: 16,
+    bottom: 80,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(0, 122, 255, 0.8)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
 });
 

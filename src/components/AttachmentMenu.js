@@ -37,6 +37,12 @@ const AttachmentMenu = ({ onSelect, onClose }) => {
       title: 'فيديو',
       color: '#E91E63',
     },
+    {
+      id: 'voice',
+      icon: 'mic',
+      title: 'تسجيل صوتي',
+      color: '#FF5722',
+    },
   ];
 
   const quickActions = [
@@ -110,14 +116,28 @@ const AttachmentMenu = ({ onSelect, onClose }) => {
 
         {/* Bottom Actions */}
         <View style={styles.bottomActions}>
-          <TouchableOpacity style={styles.voiceButton}>
+          <TouchableOpacity 
+            style={styles.voiceButton}
+            onPress={() => onSelect('voice')}
+          >
             <Ionicons name="mic" size={24} color="#2c2c2c" />
           </TouchableOpacity>
           
           <View style={styles.inputActions}>
-            <TouchableOpacity style={styles.actionButton}>
+            <TouchableOpacity 
+              style={styles.actionButton}
+              onPress={() => onSelect('enhance')}
+            >
               <Ionicons name="sparkles" size={20} color="#2c2c2c" />
               <Text style={styles.actionText}>تحسين</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={styles.actionButton}
+              onPress={() => onSelect('translate')}
+            >
+              <Ionicons name="language" size={20} color="#2c2c2c" />
+              <Text style={styles.actionText}>ترجمة</Text>
             </TouchableOpacity>
           </View>
         </View>

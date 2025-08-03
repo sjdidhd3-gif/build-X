@@ -1,4 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+// استيراد المكتبات الإضافية
+import { Platform } from 'react-native';
 
 class AIService {
   constructor() {
@@ -86,6 +88,17 @@ class AIService {
 
   // إرسال إلى OpenAI
   async sendToOpenAI(message, conversationHistory) {
+    // تحميل النموذج المحفوظ أو استخدام النموذج الافتراضي
+    let model = 'gpt-3.5-turbo';
+    try {
+      const savedModel = await AsyncStorage.getItem('ai_model');
+      if (savedModel) {
+        model = savedModel;
+      }
+    } catch (error) {
+      console.error('خطأ في تحميل النموذج:', error);
+    }
+    
     const messages = [
       {
         role: 'system',
@@ -108,7 +121,7 @@ class AIService {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: 'gpt-3.5-turbo',
+        model: model,
         messages: messages,
         max_tokens: 1000,
         temperature: 0.7

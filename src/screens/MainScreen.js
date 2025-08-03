@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -8,11 +8,15 @@ import {
   ScrollView,
   Dimensions,
   Modal,
+  StatusBar,
+  Appearance,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import ChatScreen from './ChatScreen';
 import SideMenu from '../components/SideMenu';
 import AdBanner from '../components/AdBanner';
+import WelcomeNote from '../components/WelcomeNote';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width, height } = Dimensions.get('window');
 
@@ -20,10 +24,51 @@ const MainScreen = ({ navigation, route }) => {
   const [activeTab, setActiveTab] = useState('الكل');
   const [showSideMenu, setShowSideMenu] = useState(false);
   const [userPoints, setUserPoints] = useState(293);
+  const [isDarkMode, setIsDarkMode] = useState(false);
   
   const { userType, email, name } = route.params || {};
 
   const tabs = ['الكل', 'المفضلة', 'مجدول'];
+
+  useEffect(() => {
+    loadUserPoints();
+    loadThemeSettings();
+    
+    // Listen for theme changes
+    const subscription = Appearance.addChangeListener(({ colorScheme }) => {
+      loadThemeSettings();
+    });
+    
+    return () => {
+      subscription.remove();
+    };
+  }, []);
+  
+  const loadUserPoints = async () => {
+    try {
+      const savedPoints = await AsyncStorage.getItem('userPoints');
+      if (savedPoints !== null) {
+        setUserPoints(parseInt(savedPoints));
+      }
+    } catch (error) {
+      console.error('خطأ في تحميل النقاط:', error);
+    }
+  };
+  
+  const loadThemeSettings = async () => {
+    try {
+      const darkMode = await AsyncStorage.getItem('darkMode');
+      if (darkMode !== null) {
+        setIsDarkMode(darkMode === 'true');
+      } else {
+        // Use system default if no setting is saved
+        const colorScheme = Appearance.getColorScheme();
+        setIsDarkMode(colorScheme === 'dark');
+      }
+    } catch (error) {
+      console.error('خطأ في تحميل إعدادات المظهر:', error);
+    }
+  };
 
   const handleNewChat = () => {
     navigation.navigate('Chat', { userType, email, name, userPoints });
@@ -33,12 +78,13 @@ const MainScreen = ({ navigation, route }) => {
     setShowSideMenu(!showSideMenu);
   };
 
-  const handleUpgrade = () => {
-    navigation.navigate('Upgrade', { userPoints, setUserPoints });
-  };
+  // تم نقل وظيفة الترقية إلى القائمة الجانبية
 
   return (
     <SafeAreaView style={styles.container}>
+      {/* Welcome Note */}
+      <WelcomeNote />
+      
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={toggleSideMenu} style={styles.headerButton}>
@@ -88,22 +134,6 @@ const MainScreen = ({ navigation, route }) => {
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Ad Banner */}
         <AdBanner />
-        
-        {/* Points Display */}
-        <View style={styles.pointsContainer}>
-          <View style={styles.pointsCard}>
-            <View style={styles.pointsInfo}>
-              <Text style={styles.pointsLabel}>رصيد</Text>
-              <View style={styles.pointsRow}>
-                <Ionicons name="star" size={16} color="#FFD700" />
-                <Text style={styles.pointsValue}>{userPoints}</Text>
-              </View>
-            </View>
-            <TouchableOpacity style={styles.upgradeButton} onPress={handleUpgrade}>
-              <Text style={styles.upgradeText}>ترقية</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
 
 
 
@@ -150,10 +180,17 @@ const MainScreen = ({ navigation, route }) => {
           email={email}
           name={name}
           userPoints={userPoints}
+          setUserPoints={setUserPoints}
           onClose={() => setShowSideMenu(false)}
           navigation={navigation}
         />
       </Modal>
+      
+      {/* Apply dark mode to status bar */}
+      <StatusBar 
+        barStyle={isDarkMode ? "light-content" : "dark-content"} 
+        backgroundColor={isDarkMode ? "#121212" : "#ffffff"} 
+      />
     </SafeAreaView>
   );
 };
@@ -239,54 +276,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 20,
   },
-  pointsContainer: {
-    marginVertical: 20,
-  },
-  pointsCard: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  pointsInfo: {
-    flex: 1,
-  },
-  pointsLabel: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 4,
-  },
-  pointsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  pointsValue: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#2c2c2c',
-    marginLeft: 4,
-  },
-  upgradeButton: {
-    backgroundColor: '#2c2c2c',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-  },
-  upgradeText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: 'bold',
-  },
+
   chatCard: {
     backgroundColor: '#fff',
     borderRadius: 12,

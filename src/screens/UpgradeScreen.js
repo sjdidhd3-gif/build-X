@@ -22,7 +22,7 @@ const UpgradeScreen = ({ navigation, route }) => {
       id: 1,
       name: 'حزمة المبتدئ',
       points: 100,
-      price: '5 ريال',
+      price: '7,500 د.ع',
       color: '#4CAF50',
       icon: 'leaf-outline',
       features: ['100 نقطة', 'دعم أساسي', 'محادثات غير محدودة'],
@@ -31,7 +31,7 @@ const UpgradeScreen = ({ navigation, route }) => {
       id: 2,
       name: 'حزمة المتقدم',
       points: 300,
-      price: '12 ريال',
+      price: '18,000 د.ع',
       color: '#2196F3',
       icon: 'rocket-outline',
       features: ['300 نقطة', 'دعم متقدم', 'ميزات إضافية', 'أولوية في الردود'],
@@ -41,7 +41,7 @@ const UpgradeScreen = ({ navigation, route }) => {
       id: 3,
       name: 'حزمة الخبير',
       points: 500,
-      price: '20 ريال',
+      price: '30,000 د.ع',
       color: '#FF9800',
       icon: 'diamond-outline',
       features: ['500 نقطة', 'دعم VIP', 'جميع الميزات', 'استشارات مخصصة'],
@@ -50,7 +50,7 @@ const UpgradeScreen = ({ navigation, route }) => {
       id: 4,
       name: 'حزمة الاحتراف',
       points: 1000,
-      price: '35 ريال',
+      price: '52,500 د.ع',
       color: '#9C27B0',
       icon: 'trophy-outline',
       features: ['1000 نقطة', 'دعم 24/7', 'ميزات حصرية', 'تدريب شخصي'],
@@ -120,6 +120,7 @@ const UpgradeScreen = ({ navigation, route }) => {
           style={[styles.purchaseButton, { backgroundColor: pkg.color }]}
           onPress={() => handlePurchase(pkg)}
         >
+          <Ionicons name="cart" size={18} color="#fff" />
           <Text style={styles.purchaseText}>شراء الآن</Text>
         </TouchableOpacity>
       </View>
@@ -161,6 +162,10 @@ const UpgradeScreen = ({ navigation, route }) => {
           <View style={styles.infoRow}>
             <Ionicons name="code-slash" size={20} color="#FF9800" />
             <Text style={styles.infoText}>مراجعة الكود تكلف 15 نقطة</Text>
+          </View>
+          <View style={styles.infoRow}>
+            <Ionicons name="cash-outline" size={20} color="#9C27B0" />
+            <Text style={styles.infoText}>الأسعار بالدينار العراقي (د.ع)</Text>
           </View>
         </View>
 
@@ -349,11 +354,14 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 8,
     alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
   },
   purchaseText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
+    marginLeft: 8,
   },
 });
 

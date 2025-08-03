@@ -8,20 +8,18 @@ echo "🚀 بدء بناء APK لتطبيق Build X..."
 # Check if EAS CLI is installed
 if ! command -v eas &> /dev/null; then
     echo "📦 تثبيت EAS CLI..."
-    npm install -g @expo/eas-cli
+    npm install -g eas-cli
 fi
 
-# Login to Expo (if not already logged in)
-echo "🔐 تسجيل الدخول إلى Expo..."
-eas login
+# Install dependencies
+echo "📦 تثبيت التبعيات..."
+npm install
 
-# Configure EAS build
-echo "⚙️ إعداد بناء EAS..."
-eas build:configure
-
-# Build APK for Android
+# Build APK using Expo's prebuild and standard React Native build tools
 echo "🔨 بناء APK للأندرويد..."
-eas build --platform android --profile preview
+npx expo prebuild --platform android
+cd android
+./gradlew assembleRelease
 
 echo "✅ تم الانتهاء من بناء APK!"
-echo "📱 يمكنك تحميل APK من Expo Dashboard"
+echo "📱 يمكنك العثور على APK في المسار: android/app/build/outputs/apk/release/app-release.apk"
