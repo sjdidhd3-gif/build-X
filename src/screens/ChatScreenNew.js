@@ -15,7 +15,8 @@ import {
   Platform,
   ActivityIndicator,
   Pressable,
-  Animated
+  Animated,
+  StatusBar
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
@@ -455,24 +456,32 @@ const ChatScreen = ({ navigation, route }) => {
 
   return (
     <SafeAreaView style={styles.container}>
+      <StatusBar backgroundColor="#f5f5f5" barStyle="dark-content" />
       <KeyboardAvoidingView 
         style={styles.container} 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        {/* Header */}
+        {/* Header with Points and Upgrade */}
         <View style={styles.header}>
           <TouchableOpacity 
             style={styles.backButton}
             onPress={() => navigation.goBack()}
           >
-            <Ionicons name="arrow-forward" size={24} color="#333" />
+            <Ionicons name="chevron-forward" size={24} color="#333" />
           </TouchableOpacity>
           
-          <View style={styles.headerCenter}>
-            <Text style={styles.headerTitle}>Build X</Text>
-            <Text style={styles.headerSubtitle}>
-              {hasAPIKey ? 'متصل بالذكاء الاصطناعي' : 'غير متصل'}
-            </Text>
+          <View style={styles.pointsContainer}>
+            <View style={styles.pointsDisplay}>
+              <Text style={styles.pointsText}>{userPoints}</Text>
+              <Ionicons name="sparkles" size={16} color="#333" />
+            </View>
+            
+            <TouchableOpacity 
+              style={styles.upgradeButton}
+              onPress={() => navigation.navigate('Upgrade')}
+            >
+              <Text style={styles.upgradeText}>ترقية</Text>
+            </TouchableOpacity>
           </View>
           
           <View style={styles.headerActions}>
@@ -494,7 +503,15 @@ const ChatScreen = ({ navigation, route }) => {
           onScroll={handleScroll}
           scrollEventThrottle={16}
         >
-          {messages.map((item, index) => renderMessage(item, index))}
+          {messages.length === 0 ? (
+            <View style={styles.emptyChat}>
+              <Text style={styles.emptyChatTitle}>
+                كيف يمكنني مساعدتك؟
+              </Text>
+            </View>
+          ) : (
+            messages.map((item, index) => renderMessage(item, index))
+          )}
           
           {isLoading && (
             <View style={styles.loadingContainer}>
@@ -538,7 +555,7 @@ const ChatScreen = ({ navigation, route }) => {
                 style={styles.attachButton}
                 onPress={() => setShowAttachmentMenu(true)}
               >
-                <Ionicons name="add" size={24} color="#007AFF" />
+                <Ionicons name="add" size={24} color="#333" />
               </TouchableOpacity>
               
               <TextInput
@@ -558,7 +575,7 @@ const ChatScreen = ({ navigation, route }) => {
                   onPress={sendMessage}
                   disabled={isLoading}
                 >
-                  <Ionicons name="send" size={20} color="#fff" />
+                  <Ionicons name="sparkles-outline" size={20} color="#333" />
                 </TouchableOpacity>
               ) : (
                 <TouchableOpacity
@@ -566,7 +583,7 @@ const ChatScreen = ({ navigation, route }) => {
                   onPress={startRecording}
                   disabled={!recordingPermission}
                 >
-                  <Ionicons name="mic" size={20} color="#fff" />
+                  <Ionicons name="mic" size={20} color="#333" />
                 </TouchableOpacity>
               )}
             </>
@@ -656,28 +673,45 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: '#fff',
+    backgroundColor: '#f5f5f5',
     borderBottomWidth: 1,
     borderBottomColor: '#e0e0e0',
   },
   backButton: {
     padding: 8,
   },
-  headerCenter: {
-    flex: 1,
+  pointsContainer: {
+    flexDirection: 'row',
     alignItems: 'center',
   },
-  headerTitle: {
-    fontSize: 18,
+  pointsDisplay: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f0f0f0',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    marginRight: 8,
+  },
+  pointsText: {
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#333',
+    marginRight: 4,
   },
-  headerSubtitle: {
-    fontSize: 12,
-    color: '#666',
-    marginTop: 2,
+  upgradeButton: {
+    backgroundColor: '#1a1a1a',
+    paddingHorizontal: 16,
+    paddingVertical: 6,
+    borderRadius: 20,
+  },
+  upgradeText: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#fff',
   },
   headerActions: {
     flexDirection: 'row',
@@ -692,6 +726,18 @@ const styles = StyleSheet.create({
   },
   messagesContent: {
     paddingVertical: 16,
+  },
+  emptyChat: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 100,
+  },
+  emptyChatTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#333',
+    textAlign: 'center',
   },
   messageContainer: {
     flexDirection: 'row',
@@ -815,29 +861,35 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#f0f0f0',
+    backgroundColor: '#f5f5f5',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 8,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
   },
   textInput: {
     flex: 1,
     maxHeight: 100,
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: '#f8f8f8',
+    backgroundColor: '#f5f5f5',
     borderRadius: 20,
     fontSize: 16,
     textAlignVertical: 'top',
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
   },
   sendButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#007AFF',
+    backgroundColor: '#f5f5f5',
     justifyContent: 'center',
     alignItems: 'center',
     marginLeft: 8,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
   },
   sendButtonDisabled: {
     backgroundColor: '#e0e0e0',
@@ -846,10 +898,12 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#FF5722',
+    backgroundColor: '#f5f5f5',
     justifyContent: 'center',
     alignItems: 'center',
     marginLeft: 8,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
   },
   recordingContainer: {
     flex: 1,

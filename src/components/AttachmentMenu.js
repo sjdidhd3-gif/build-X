@@ -14,55 +14,49 @@ const { width, height } = Dimensions.get('window');
 const AttachmentMenu = ({ onSelect, onClose }) => {
   const attachmentOptions = [
     {
-      id: 'camera',
-      icon: 'camera',
-      title: 'الكاميرا',
-      color: '#4CAF50',
+      id: 'video',
+      icon: 'videocam',
+      title: 'فيديو',
+      color: '#888888',
     },
     {
       id: 'image',
       icon: 'image',
       title: 'صورة',
-      color: '#2196F3',
+      color: '#888888',
     },
     {
-      id: 'document',
-      icon: 'document-attach',
-      title: 'ملف',
-      color: '#FF9800',
+      id: 'spreadsheet',
+      icon: 'grid',
+      title: 'جدول بيانات',
+      color: '#888888',
     },
     {
-      id: 'video',
-      icon: 'videocam',
-      title: 'فيديو',
-      color: '#E91E63',
-    },
-    {
-      id: 'voice',
-      icon: 'mic',
-      title: 'تسجيل صوتي',
-      color: '#FF5722',
+      id: 'slides',
+      icon: 'albums',
+      title: 'Slides',
+      color: '#888888',
     },
   ];
 
   const quickActions = [
     {
-      id: 'slides',
-      icon: 'albums',
-      title: 'Slides',
-      color: '#9C27B0',
-    },
-    {
-      id: 'agent',
-      icon: 'person',
-      title: 'Agent',
+      id: 'camera',
+      icon: 'camera',
+      title: 'الكاميرا',
       color: '#607D8B',
     },
     {
-      id: 'chat',
-      icon: 'chatbubbles',
-      title: 'Chat',
-      color: '#795548',
+      id: 'document',
+      icon: 'document-attach',
+      title: 'ملف',
+      color: '#607D8B',
+    },
+    {
+      id: 'voice',
+      icon: 'mic',
+      title: 'تسجيل صوتي',
+      color: '#607D8B',
     },
   ];
 
@@ -77,71 +71,54 @@ const AttachmentMenu = ({ onSelect, onClose }) => {
         <TouchableOpacity style={styles.backdrop} onPress={onClose} />
         
         <View style={styles.menuContainer}>
-        {/* Quick Actions */}
-        <View style={styles.quickActionsContainer}>
-          <Text style={styles.sectionTitle}>إعطاء أمر</Text>
-          <View style={styles.quickActions}>
-            {quickActions.map((action) => (
-              <TouchableOpacity
-                key={action.id}
-                style={styles.quickActionButton}
-                onPress={() => onSelect(action.id)}
-              >
-                <View style={[styles.quickActionIcon, { backgroundColor: action.color }]}>
-                  <Ionicons name={action.icon} size={20} color="#fff" />
-                </View>
-                <Text style={styles.quickActionText}>{action.title}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
-
-        {/* Attachment Options */}
-        <View style={styles.attachmentContainer}>
-          <View style={styles.attachmentGrid}>
+          {/* Attachment Options - Simple Row Layout */}
+          <View style={styles.attachmentRow}>
             {attachmentOptions.map((option) => (
               <TouchableOpacity
                 key={option.id}
                 style={styles.attachmentOption}
                 onPress={() => onSelect(option.id)}
               >
-                <View style={[styles.attachmentIcon, { backgroundColor: option.color }]}>
-                  <Ionicons name={option.icon} size={24} color="#fff" />
+                <View style={styles.attachmentIconContainer}>
+                  <Ionicons name={option.icon} size={24} color="#666" />
                 </View>
                 <Text style={styles.attachmentText}>{option.title}</Text>
               </TouchableOpacity>
             ))}
           </View>
-        </View>
 
-        {/* Bottom Actions */}
-        <View style={styles.bottomActions}>
-          <TouchableOpacity 
-            style={styles.voiceButton}
-            onPress={() => onSelect('voice')}
-          >
-            <Ionicons name="mic" size={24} color="#2c2c2c" />
-          </TouchableOpacity>
-          
-          <View style={styles.inputActions}>
+          {/* Input Placeholder */}
+          <View style={styles.inputPlaceholder}>
+            <Text style={styles.inputPlaceholderText}>
+              أعط Manus مهمة للعمل عليها...
+            </Text>
+          </View>
+
+          {/* Bottom Controls */}
+          <View style={styles.bottomControls}>
             <TouchableOpacity 
-              style={styles.actionButton}
-              onPress={() => onSelect('enhance')}
+              style={styles.micButton}
+              onPress={() => onSelect('voice')}
             >
-              <Ionicons name="sparkles" size={20} color="#2c2c2c" />
-              <Text style={styles.actionText}>تحسين</Text>
+              <Ionicons name="mic" size={24} color="#333" />
             </TouchableOpacity>
             
             <TouchableOpacity 
-              style={styles.actionButton}
-              onPress={() => onSelect('translate')}
+              style={styles.adaptiveButton}
+              onPress={() => onSelect('adaptive')}
             >
-              <Ionicons name="language" size={20} color="#2c2c2c" />
-              <Text style={styles.actionText}>ترجمة</Text>
+              <Ionicons name="sparkles-outline" size={24} color="#333" />
+              <Text style={styles.adaptiveText}>تكيفي</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={styles.addButton}
+              onPress={onClose}
+            >
+              <Ionicons name="add" size={24} color="#333" />
             </TouchableOpacity>
           </View>
         </View>
-      </View>
       </View>
     </Modal>
   );
@@ -151,7 +128,7 @@ const styles = StyleSheet.create({
   overlay: {
     flex: 1,
     justifyContent: 'flex-end',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
     position: 'absolute',
     top: 0,
     left: 0,
@@ -164,61 +141,30 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   menuContainer: {
+    backgroundColor: '#f5f5f5',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingBottom: Platform.OS === 'ios' ? 30 : 20,
+  },
+  attachmentRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    paddingVertical: 15,
+    paddingHorizontal: 10,
     backgroundColor: '#fff',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    paddingBottom: 30,
-  },
-  quickActionsContainer: {
-    padding: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#2c2c2c',
-    marginBottom: 16,
-    textAlign: 'right',
-  },
-  quickActions: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-  },
-  quickActionButton: {
-    alignItems: 'center',
-    flex: 1,
-  },
-  quickActionIcon: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  quickActionText: {
-    fontSize: 12,
-    color: '#666',
-    textAlign: 'center',
-  },
-  attachmentContainer: {
-    padding: 20,
-  },
-  attachmentGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
   },
   attachmentOption: {
     alignItems: 'center',
-    width: '22%',
-    marginBottom: 20,
+    justifyContent: 'center',
+    padding: 10,
   },
-  attachmentIcon: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+  attachmentIconContainer: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: '#f0f0f0',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 8,
@@ -228,40 +174,62 @@ const styles = StyleSheet.create({
     color: '#666',
     textAlign: 'center',
   },
-  bottomActions: {
+  inputPlaceholder: {
+    backgroundColor: '#fff',
+    marginTop: 10,
+    marginHorizontal: 15,
+    paddingVertical: 15,
+    paddingHorizontal: 20,
+    borderRadius: 25,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+  },
+  inputPlaceholderText: {
+    color: '#999',
+    fontSize: 14,
+    textAlign: 'right',
+  },
+  bottomControls: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingTop: 10,
+    paddingTop: 15,
   },
-  voiceButton: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: '#f0f0f0',
+  micButton: {
+    width: 45,
+    height: 45,
+    borderRadius: 22.5,
+    backgroundColor: '#fff',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 16,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
   },
-  inputActions: {
-    flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-  },
-  actionButton: {
+  adaptiveButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f0f0f0',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 25,
-    marginLeft: 8,
+    backgroundColor: '#fff',
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
   },
-  actionText: {
+  adaptiveText: {
     fontSize: 14,
-    color: '#2c2c2c',
-    marginLeft: 6,
-    fontWeight: '600',
+    color: '#333',
+    marginLeft: 5,
+  },
+  addButton: {
+    width: 45,
+    height: 45,
+    borderRadius: 22.5,
+    backgroundColor: '#fff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
   },
 });
 
