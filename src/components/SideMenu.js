@@ -189,17 +189,26 @@ const SideMenu = ({ userType, email, name, userPoints, onClose, navigation, setU
     {
       icon: 'calendar-outline',
       title: 'المهام المجدولة',
-      onPress: () => setShowTasksModal(true)
+      onPress: () => {
+        onClose();
+        navigation.navigate('ScheduledTasks');
+      }
     },
     {
       icon: 'book-outline',
       title: 'معرفة',
-      onPress: () => setShowAboutModal(true)
+      onPress: () => {
+        onClose();
+        navigation.navigate('Knowledge');
+      }
     },
     {
       icon: 'flask-outline',
       title: 'مختبر الميزات',
-      onPress: () => setShowFeaturesModal(true)
+      onPress: () => {
+        onClose();
+        navigation.navigate('FeaturesLab');
+      }
     },
     {
       icon: 'shield-outline',
@@ -219,25 +228,22 @@ const SideMenu = ({ userType, email, name, userPoints, onClose, navigation, setU
       icon: 'desktop-outline',
       title: 'متصفح السحابية',
       onPress: () => {
-        Alert.alert(
-          'متصفح السحابية',
-          'يمكنك الوصول إلى ملفاتك المخزنة على السحابة من هنا.',
-          [
-            { text: 'فتح المتصفح', onPress: () => {
-              onClose();
-              // Navigate to cloud browser when implemented
-              Alert.alert('متصفح السحابية', 'سيتم إضافة هذه الميزة قريباً');
-            }},
-            { text: 'إلغاء', style: 'cancel' }
-          ]
-        );
+        onClose();
+        navigation.navigate('CloudBrowser');
       }
     },
     {
       icon: 'globe-outline',
       title: 'اللغة',
       subtitle: language,
-      onPress: () => setShowLanguageModal(true)
+      onPress: () => {
+        onClose();
+        navigation.navigate('Language', {
+          onLanguageChange: (newLanguage) => {
+            setLanguage(newLanguage);
+          }
+        });
+      }
     },
     {
       icon: 'person-outline',

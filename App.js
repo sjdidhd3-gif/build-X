@@ -12,6 +12,11 @@ import MainScreen from './src/screens/MainScreen';
 import ChatScreen from './src/screens/ChatScreenNew';
 import APISettingsScreen from './src/screens/APISettingsScreen';
 import UpgradeScreen from './src/screens/UpgradeScreen';
+import ScheduledTasksScreen from './src/screens/ScheduledTasksScreen';
+import KnowledgeScreen from './src/screens/KnowledgeScreen';
+import FeaturesLabScreen from './src/screens/FeaturesLabScreen';
+import CloudBrowserScreen from './src/screens/CloudBrowserScreen';
+import LanguageScreen from './src/screens/LanguageScreen';
 
 // Enable RTL for Arabic
 I18nManager.allowRTL(true);
@@ -46,6 +51,11 @@ export default function App() {
           <Stack.Screen name="Chat" component={ChatScreen} />
           <Stack.Screen name="APISettings" component={APISettingsScreen} />
           <Stack.Screen name="Upgrade" component={UpgradeScreen} />
+          <Stack.Screen name="ScheduledTasks" component={ScheduledTasksScreen} />
+          <Stack.Screen name="Knowledge" component={KnowledgeScreen} />
+          <Stack.Screen name="FeaturesLab" component={FeaturesLabScreen} />
+          <Stack.Screen name="CloudBrowser" component={CloudBrowserScreen} />
+          <Stack.Screen name="Language" component={LanguageScreen} />
         </Stack.Navigator>
       </NavigationContainer>
     </PaperProvider>
